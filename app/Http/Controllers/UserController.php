@@ -9,6 +9,7 @@
     use DB;
 
     Class UserController extends Controller {
+        
         use ApiResponser;
 
         private $request;
@@ -22,10 +23,14 @@
             return response()->json($users, 200);
         }
    
+
+
         public function index() {
             $users = User::all();
             return $this->successResponse($users);
         }
+
+
 
         public function add(Request $request) {
             $rules = [
@@ -39,13 +44,30 @@
             return $this->successResponse($users, Response::HTTP_CREATED);
         }
 
-        public function show($id) {
-            $users = User::where('id', $id)->first();
+
+
+
+        public function show($id)
+        {
+
+            $user = User::findOrFail($id);
+            return $this->successResponse($user);
+        
+            
+
+
+
+
+        /*    $users = User::where('id', $id)->first();
             if ($users){
                 return $this->successResponse($users);
             }
             return $this->errorResponse('User ID Does Not Exist', Response::HTTP_NOT_FOUND);
+         */
+
         }
+
+
 
         public function update(Request $request, $id) {
             $rules = [
@@ -53,7 +75,23 @@
                 'password' => 'max:255',
                 'admin' => 'in:1,0',
             ];
+            
+           $this->validate ($request, $rules);
+           $user = User::findOrFail($id);
 
+           $user->fill($request->all());
+
+           if ($user->isClean()){
+               return $this->errorResponse('At least one value must change', Response::HTTP_UNPROCESSABLE_ENTITY);
+           }
+
+           $user->save();
+           return $this->successResponse($user);
+
+
+        
+
+            /*
             $this->validate($request, $rules);
 
             $users = User::where('id', $id)->first();
@@ -68,15 +106,26 @@
                     return $this->successResponse($users);
                 }
                 return $this->errorResponse('User ID does not exist', Response::HTTP_NOT_FOUND);
+            */
+
         }
 
-        public function delete($id) {
+
+        public function delete($id)
+        {
+
+            $user = User::findOrFail($id);
+            $user->delete();
+            return $this->errorResponse('User ID DOes Not Exist', Response::HTTP_NOT_FOUND);
+
+            /*
             $users = User::where('id', $id)->first();
             if($users){
                 $users->delete();
                 return $this->successResponse($users);
             }
             return $this->errorResponse('User ID does not exist', Response::HTTP_NOT_FOUND);
+         */
         }
     }
 

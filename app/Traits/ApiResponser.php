@@ -9,7 +9,7 @@ trait ApiResponser {
     }
 
     public function errorResponse($message, $code) {
-        return response()->json(['error' -> $message, 'code' -> $code], $code);
+        return response()->json(['error' => $message, 'code' > $code], $code);
     }
 }
 
