@@ -2,6 +2,7 @@
 
     namespace App\Http\Controllers;
 
+    use App\Models\UserJob;
     use Illuminate\Http\Request;
     use Illuminate\Http\Response;
     use App\Models\User;
@@ -37,13 +38,15 @@
                 'username' => 'required|max:255',
                 'password' => 'required|max:255',
                 'admin' => 'required|in:1,0',
+                'jobid' => 'required|numeric|min:1|not_in:0',
             ];
             
             $this->validate($request, $rules);
+            // validate if Jobid is found in the table tbluserjob
+            $userjob = UserJob::findOrFail($request->jobid);
             $users = User::create($request->all());
             return $this->successResponse($users, Response::HTTP_CREATED);
         }
-
 
 
 
@@ -53,8 +56,9 @@
             $user = User::findOrFail($id);
             return $this->successResponse($user);
         
-            
-
+            $users = User::findOrFail($id);
+            return $this->successResponse($users); 
+       
 
 
 
@@ -74,6 +78,7 @@
                 'username' => 'max:255',
                 'password' => 'max:255',
                 'admin' => 'in:1,0',
+                'jobid' => 'required|numeric|min:1|not_in:0',
             ];
             
            $this->validate ($request, $rules);
@@ -85,8 +90,25 @@
                return $this->errorResponse('At least one value must change', Response::HTTP_UNPROCESSABLE_ENTITY);
            }
 
+
+           $userjob = UserJob::findOrFail($request->job_id);
+            
+           $user = User::findOrFail($id);
+
+           $user->fill($request->all());
+
+           //if no changes happen
+           if ($user->isClean()){
+               return $this->errorResponse('At least one value must change', Response::HTTP_UNPROCESSABLE_ENTITY);
+           }
+
            $user->save();
            return $this->successResponse($user);
+           $users->save();
+           return $this->successResponse($users);
+
+
+
 
 
         
@@ -113,7 +135,10 @@
 
         public function delete($id)
         {
-
+            $user = User::findOrFail($id);
+            $user->delete();
+            return $this->successResponse($user);
+            
             $user = User::findOrFail($id);
             $user->delete();
             return $this->errorResponse('User ID DOes Not Exist', Response::HTTP_NOT_FOUND);
